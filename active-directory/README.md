@@ -1,13 +1,6 @@
----
-description: Active Directory attack chains, BloodHound analysis, and privilege escalation write-ups.
-icon: sitemap
----
-
 # Active Directory
 
-Write-ups covering full AD compromise scenarios — from initial access with leaked credentials all the way to Domain Admin.
-
-## Write-Ups
+Write-ups covering full AD compromise scenarios.
 
 | Machine | Techniques | Difficulty |
 |---------|-----------|------------|
