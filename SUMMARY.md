@@ -1,4 +1,4 @@
-# Table of Contents
+# Table of contents
 
 ## Home
 
@@ -11,4 +11,4 @@
 
 ## Web
 
-* [Overview](web/README.md)
+* [Overview](web/overview.md)

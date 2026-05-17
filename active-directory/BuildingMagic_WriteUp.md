@@ -1,19 +1,21 @@
 ---
-Description: Full Active Directory compromise via Kerberoasting, ForceChangePassword, LLMNR poisoning, and SeBackupPrivilege abuse.
+Description: >-
+  Full Active Directory compromise via Kerberoasting, ForceChangePassword, LLMNR
+  poisoning, and SeBackupPrivilege abuse.
 icon: building
 ---
 
 # BuildingMagic
 
-| Field | Value |
-|-------|-------|
-| **Category** | Active Directory Penetration Testing |
-| **Difficulty** | Medium |
-| **Domain** | `BUILDINGMAGIC.LOCAL` |
-| **Domain Controller** | `DC01` — `10.0.17.7` |
-| **Objective** | Full compromise of the Active Directory environment |
+| Field                 | Value                                               |
+| --------------------- | --------------------------------------------------- |
+| **Category**          | Active Directory Penetration Testing                |
+| **Difficulty**        | Medium                                              |
+| **Domain**            | `BUILDINGMAGIC.LOCAL`                               |
+| **Domain Controller** | `DC01` — `10.0.17.7`                                |
+| **Objective**         | Full compromise of the Active Directory environment |
 
----
+***
 
 ## Setup
 
@@ -24,24 +26,24 @@ Add the following entries to `/etc/hosts` before starting:
 10.0.17.7   dc01.buildingmagic.local
 ```
 
----
+***
 
 ## 1. Credentials Analysis
 
 A leaked database was provided as the starting point, containing usernames and MD5-hashed passwords for 10 domain accounts.
 
-| ID | Username | Full Name | Role | MD5 Hash |
-|----|----------|-----------|------|----------|
-| 1 | r.widdleton | Ron Widdleton | Intern Builder | `c4a21c4d...` |
-| 2 | n.bottomsworth | Neville Bottomsworth | Planner | `61ee643c...` |
-| 3 | l.layman | Luna Layman | Planner | `8960516f...` |
-| 4 | c.smith | Chen Smith | Builder | `bbd151e2...` |
-| 5 | d.thomas | Dean Thomas | Builder | `4d14ff3e...` |
-| 6 | s.winnigan | Samuel Winnigan | HR Manager | `078576a0...` |
-| 7 | p.jackson | Parvati Jackson | Shift Lead | `eada74b2...` |
-| 8 | b.builder | Bob Builder | Electrician | `dd4137ba...` |
-| 9 | t.ren | Theodore Ren | Safety Officer | `bfaf794a...` |
-| 10 | e.macmillan | Ernest Macmillan | Surveyor | `47d23284...` |
+| ID | Username       | Full Name            | Role           | MD5 Hash      |
+| -- | -------------- | -------------------- | -------------- | ------------- |
+| 1  | r.widdleton    | Ron Widdleton        | Intern Builder | `c4a21c4d...` |
+| 2  | n.bottomsworth | Neville Bottomsworth | Planner        | `61ee643c...` |
+| 3  | l.layman       | Luna Layman          | Planner        | `8960516f...` |
+| 4  | c.smith        | Chen Smith           | Builder        | `bbd151e2...` |
+| 5  | d.thomas       | Dean Thomas          | Builder        | `4d14ff3e...` |
+| 6  | s.winnigan     | Samuel Winnigan      | HR Manager     | `078576a0...` |
+| 7  | p.jackson      | Parvati Jackson      | Shift Lead     | `eada74b2...` |
+| 8  | b.builder      | Bob Builder          | Electrician    | `dd4137ba...` |
+| 9  | t.ren          | Theodore Ren         | Safety Officer | `bfaf794a...` |
+| 10 | e.macmillan    | Ernest Macmillan     | Surveyor       | `47d23284...` |
 
 After cracking the hashes offline, two valid plaintext credentials were recovered:
 
@@ -50,7 +52,7 @@ r.widdleton : lilronron
 t.ren        : shadowhex7
 ```
 
----
+***
 
 ## 2. Credentials Validation
 
@@ -62,20 +64,20 @@ nxc smb buildingmagic.local -u 'r.widdleton' -p 'lilronron' --shares
 
 **Result:** Authentication successful. Shares enumerated:
 
-| Share | Permissions | Remark |
-|-------|-------------|--------|
-| ADMIN$ | — | Remote Admin |
-| C$ | — | Default share |
-| File-Share | — | Central Repository of Building Magic's files |
-| IPC$ | READ | Remote IPC |
-| NETLOGON | — | Logon server share |
-| SYSVOL | — | Logon server share |
+| Share      | Permissions | Remark                                       |
+| ---------- | ----------- | -------------------------------------------- |
+| ADMIN$     | —           | Remote Admin                                 |
+| C$         | —           | Default share                                |
+| File-Share | —           | Central Repository of Building Magic's files |
+| IPC$       | READ        | Remote IPC                                   |
+| NETLOGON   | —           | Logon server share                           |
+| SYSVOL     | —           | Logon server share                           |
 
 {% hint style="warning" %}
 `r.widdleton` had no write access to `File-Share` at this stage. Further enumeration was needed.
 {% endhint %}
 
----
+***
 
 ## 3. BloodHound Data Collection
 
@@ -92,23 +94,25 @@ Collection methods resolved: `acl, adcs, container, dcom, group, localadmin, log
 ADCS enumeration returned 0 certificate templates and 0 Enterprise CAs — no ESC attack paths were available.
 {% endhint %}
 
----
+***
 
 ## 4. BloodHound Analysis
 
-![BloodHound node view for R.WIDDLETON](images/bloodhound-widdleton-node.png)
+![BloodHound node view for R.WIDDLETON](../.gitbook/assets/bloodhound-widdleton-node.png)
+
 > BloodHound node view for `R.WIDDLETON@BUILDINGMAGIC.LOCAL`
 
 Analysis of `r.widdleton` showed:
 
-- No write access over any AD objects
-- Not a member of any privileged or interesting groups
-- `Password Never Expires: TRUE`
-- `Do Not Require Pre-Authentication: FALSE`
+* No write access over any AD objects
+* Not a member of any privileged or interesting groups
+* `Password Never Expires: TRUE`
+* `Do Not Require Pre-Authentication: FALSE`
 
 BloodHound's **Kerberoastable Users** query revealed a single target:
 
-![BloodHound Kerberoastable users query showing R.HAGGARD](images/bloodhound-haggard-kerberoastable.png)
+![BloodHound Kerberoastable users query showing R.HAGGARD](../.gitbook/assets/bloodhound-haggard-kerberoastable.png)
+
 > BloodHound Pathfinding showing `R.HAGGARD@BUILDINGMAGIC.LOCAL` as the only Kerberoastable user
 
 **Attack path identified:**
@@ -116,7 +120,7 @@ BloodHound's **Kerberoastable Users** query revealed a single target:
 1. Kerberoast `r.haggard` to obtain and crack their TGS ticket
 2. Use `r.haggard`'s `ForceChangePassword` privilege to reset `h.potch`'s password
 
----
+***
 
 ## 5. Compromising `r.haggard` — Kerberoasting
 
@@ -152,13 +156,14 @@ hashcat -m 13100 output.txt /usr/share/wordlists/rockyou.txt
 
 SMB validation confirmed the credentials. `r.haggard` now has READ access to `NETLOGON` and `SYSVOL`.
 
----
+***
 
 ## 6. Compromising `h.potch` — ForceChangePassword
 
 BloodHound revealed that `r.haggard` holds the `ForceChangePassword` edge over `h.potch`, meaning the password can be reset without knowing the current one.
 
-![BloodHound ForceChangePassword abuse panel for H.POTCH](images/bloodhound-potch-forcechangepassword.png)
+![BloodHound ForceChangePassword abuse panel for H.POTCH](../.gitbook/assets/bloodhound-potch-forcechangepassword.png)
+
 > BloodHound abuse info panel for the ForceChangePassword edge on `H.POTCH@BUILDINGMAGIC.LOCAL`
 
 Using Samba's `net rpc` tool:
@@ -175,7 +180,7 @@ Password changed successfully. `h.potch : NewPass!@`
 
 SMB validation confirmed the new credentials, and `h.potch` has **READ,WRITE** access to `File-Share`.
 
----
+***
 
 ## 7. Capturing `h.grangon` — LLMNR Poisoning via Slinky
 
@@ -200,7 +205,7 @@ The hash was cracked offline:
 
 Validation confirmed `h.grangon` has **READ,WRITE** access to `File-Share`.
 
----
+***
 
 ## 8. Post-Exploitation — Abusing SeBackupPrivilege
 
@@ -245,7 +250,7 @@ Administrator:500:aad3b435b51404eeaad3b435b51404ee:520126a03f5d5a8d836f1c4f34ede
 Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 ```
 
----
+***
 
 ## 9. Domain Compromise — Pass-the-Hash as `a.flatch`
 
@@ -271,7 +276,7 @@ evil-winrm -u 'a.flatch' \
 Shell obtained as `a.flatch` — local Administrator on the Domain Controller.
 {% endhint %}
 
----
+***
 
 ## 10. Root Flag
 
@@ -284,7 +289,7 @@ cat root.txt
 <Root-FLAG>
 ```
 
----
+***
 
 ## Attack Chain Summary
 
@@ -313,16 +318,16 @@ SeBackupPrivilege  -->  SAM + SYSTEM dump  -->  secretsdump  -->  Admin NT hash
 Pass-the-Hash as a.flatch  -->  Administrator shell  -->  root.txt [DONE]
 ```
 
----
+***
 
 ## Tools Used
 
-| Tool | Purpose |
-|------|---------|
-| [NetExec (nxc)](https://github.com/Pennyw0rth/NetExec) | SMB/LDAP enumeration, Kerberoasting, Slinky module |
-| [BloodHound](https://github.com/BloodHoundAD/BloodHound) | AD graph analysis and attack path discovery |
-| [Hashcat](https://hashcat.net/hashcat/) | Offline hash cracking (MD5, Kerberos TGS) |
-| [Responder](https://github.com/lgandx/Responder) | NTLMv2 hash capture via LLMNR/NBT-NS poisoning |
-| [Evil-WinRM](https://github.com/Hackplayers/evil-winrm) | Remote shell via WinRM |
-| [Impacket secretsdump](https://github.com/fortra/impacket) | SAM/SYSTEM hive parsing and hash extraction |
-| net rpc (Samba) | Forced password change via RPC |
+| Tool                                                       | Purpose                                            |
+| ---------------------------------------------------------- | -------------------------------------------------- |
+| [NetExec (nxc)](https://github.com/Pennyw0rth/NetExec)     | SMB/LDAP enumeration, Kerberoasting, Slinky module |
+| [BloodHound](https://github.com/BloodHoundAD/BloodHound)   | AD graph analysis and attack path discovery        |
+| [Hashcat](https://hashcat.net/hashcat/)                    | Offline hash cracking (MD5, Kerberos TGS)          |
+| [Responder](https://github.com/lgandx/Responder)           | NTLMv2 hash capture via LLMNR/NBT-NS poisoning     |
+| [Evil-WinRM](https://github.com/Hackplayers/evil-winrm)    | Remote shell via WinRM                             |
+| [Impacket secretsdump](https://github.com/fortra/impacket) | SAM/SYSTEM hive parsing and hash extraction        |
+| net rpc (Samba)                                            | Forced password change via RPC                     |
