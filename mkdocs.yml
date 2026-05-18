@@ -1,28 +1,36 @@
-site_name: RodKast - CTF Write-Ups
+site_name: Write Ups & InfoSec Notes
 site_url: https://RodKast.github.io/ctf-writeups
 site_description: Penetration testing notes, CTF solutions, and red team exercises.
 site_author: RodKast
 
 theme:
   name: material
+  logo: assets/fsociety.png
+  favicon: assets/fsociety.png
   palette:
     scheme: slate
     primary: black
-    accent: deep orange
+    accent: deep purple
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
-    - navigation.tabs
-    - navigation.sections
     - navigation.top
     - search.highlight
+    - search.suggest
     - content.code.copy
+    - toc.follow
+
+extra_css:
+  - assets/custom.css
 
 nav:
   - Home: index.md
   - Active Directory:
-    - Overview: active-directory/index.md
-    - BuildingMagic: active-directory/BuildingMagic_WriteUp.md
+    - HackSmarter:
+      - BuildingMagic: active-directory/hacksmarter/BuildingMagic_WriteUp.md
   - Web:
-    - Overview: web/index.md
+    - Overview: web/README.md
 
 markdown_extensions:
   - admonition

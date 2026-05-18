@@ -1,13 +1,9 @@
-<<<<<<< HEAD
 ---
-Description: >-
+description: >-
   Full Active Directory compromise via Kerberoasting, ForceChangePassword, LLMNR
   poisoning, and SeBackupPrivilege abuse.
-icon: building
+icon: material/office-building
 ---
-
-=======
->>>>>>> b264669 (New Changes)
 # BuildingMagic
 
 | Field                 | Value                                               |
@@ -51,8 +47,8 @@ A leaked database was provided as the starting point, containing usernames and M
 After cracking the hashes offline, two valid plaintext credentials were recovered:
 
 ```
-r.widdleton : lilronron
-t.ren        : shadowhex7
+r.widdleton:lilronron
+t.ren:shadowhex7
 ```
 
 ***
@@ -97,14 +93,8 @@ Collection methods resolved: `acl, adcs, container, dcom, group, localadmin, log
 
 ## 4. BloodHound Analysis
 
-<<<<<<< HEAD
-![BloodHound node view for R.WIDDLETON](../.gitbook/assets/bloodhound-widdleton-node.png)
-
-> BloodHound node view for `R.WIDDLETON@BUILDINGMAGIC.LOCAL`
-=======
 ![BloodHound node view for R.WIDDLETON](images/bloodhound-widdleton-node.png)
 *BloodHound node view for `R.WIDDLETON@BUILDINGMAGIC.LOCAL`*
->>>>>>> b264669 (New Changes)
 
 Analysis of `r.widdleton` showed:
 
@@ -115,14 +105,8 @@ Analysis of `r.widdleton` showed:
 
 BloodHound's **Kerberoastable Users** query revealed a single target:
 
-<<<<<<< HEAD
-![BloodHound Kerberoastable users query showing R.HAGGARD](../.gitbook/assets/bloodhound-haggard-kerberoastable.png)
-
-> BloodHound Pathfinding showing `R.HAGGARD@BUILDINGMAGIC.LOCAL` as the only Kerberoastable user
-=======
 ![BloodHound Kerberoastable users query showing R.HAGGARD](images/bloodhound-haggard-kerberoastable.png)
 *BloodHound Pathfinding showing `R.HAGGARD@BUILDINGMAGIC.LOCAL` as the only Kerberoastable user*
->>>>>>> b264669 (New Changes)
 
 **Attack path identified:**
 
@@ -169,14 +153,8 @@ SMB validation confirmed the credentials. `r.haggard` now has READ access to `NE
 
 BloodHound revealed that `r.haggard` holds the `ForceChangePassword` edge over `h.potch`, meaning the password can be reset without knowing the current one.
 
-<<<<<<< HEAD
-![BloodHound ForceChangePassword abuse panel for H.POTCH](../.gitbook/assets/bloodhound-potch-forcechangepassword.png)
-
-> BloodHound abuse info panel for the ForceChangePassword edge on `H.POTCH@BUILDINGMAGIC.LOCAL`
-=======
 ![BloodHound ForceChangePassword abuse panel for H.POTCH](images/bloodhound-potch-forcechangepassword.png)
 *BloodHound abuse info panel for the ForceChangePassword edge on `H.POTCH@BUILDINGMAGIC.LOCAL`*
->>>>>>> b264669 (New Changes)
 
 Using Samba's `net rpc` tool:
 

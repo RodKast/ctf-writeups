@@ -1,6 +1,6 @@
-# CTF Write-Ups
+# Write-Ups & InfoSec Notes
 
-Hey! I'm **Chris** AKA **RodKast** — a penetration tester and CTF player documenting my journey through security challenges, AD labs, and red team exercises.
+Hey! I'm **Chris** AKA **RodKast**, a **Cyber Security Engineer** and CTF player with a **Bachelor's degree in Electronics Engineering**, currently working in the security field and about to begin a **Master's degree in Advanced Cyber Security Technologies and Governance**. This space is where I document my journey through security challenges, AD labs, and red team exercises.
 
 ---
 
@@ -18,7 +18,7 @@ Hey! I'm **Chris** AKA **RodKast** — a penetration tester and CTF player docum
 
 ## Latest Write-Ups
 
-- [BuildingMagic](active-directory/BuildingMagic_WriteUp.md) — Full AD compromise via Kerberoasting, ForceChangePassword, LLMNR poisoning & SeBackupPrivilege
+- [BuildingMagic](active-directory/hacksmarter/BuildingMagic_WriteUp.md) — Full AD compromise via Kerberoasting, ForceChangePassword, LLMNR poisoning & SeBackupPrivilege
 
 ---
 
