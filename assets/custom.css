@@ -1,0 +1,412 @@
+/* ─── Base font scale ────────────────────────────────────────── */
+html {
+  font-size: 125% !important;
+}
+
+/* ─── Variables ──────────────────────────────────────────────── */
+:root {
+  --accent:        #b7aae8;
+  --accent-dim:    #020106;
+  --accent-subtle: rgba(167, 139, 250, 0.07);
+  --accent-glow:   rgba(167, 139, 250, 0.15);
+
+  --bg:            #0c0c10;
+  --surface:       #13131a;
+  --surface-2:     #1a1a24;
+  --surface-3:     #20202e;
+
+  --border:        #222233;
+  --border-light:  #2c2c42;
+
+  --text-primary:   #eeeef2;
+  --text-secondary: #7b7b9a;
+  --text-muted:     #44445a;
+
+  --md-primary-fg-color:          #0c0c10;
+  --md-primary-fg-color--light:   #13131a;
+  --md-primary-fg-color--dark:    #080810;
+  --md-default-bg-color:          #0c0c10;
+  --md-default-fg-color:          #eeeef2;
+  --md-default-fg-color--light:   #7b7b9a;
+  --md-default-fg-color--lighter: #44445a;
+  --md-code-bg-color:             #13131a;
+  --md-code-fg-color:             #cdd6f4;
+  --md-accent-fg-color:           #a78bfa;
+  --md-typeset-a-color:           #a78bfa;
+}
+
+/* ─── Global surfaces ────────────────────────────────────────── */
+body,
+.md-main,
+.md-main__inner,
+.md-content,
+.md-content__inner,
+.md-sidebar,
+.md-sidebar__scrollwrap,
+.md-sidebar__inner,
+.md-nav,
+.md-header,
+.md-header__inner,
+.md-footer,
+.md-footer__inner,
+.md-tabs,
+.md-tabs__inner {
+  background-color: var(--bg) !important;
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+.md-header {
+  background: linear-gradient(180deg, #0f0f16 0%, #0c0c10 100%) !important;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border) !important;
+}
+
+.md-header__title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+
+.md-header__button.md-logo img {
+  height: 28px;
+  width: 28px;
+  object-fit: contain;
+  filter: brightness(0.9);
+  transition: filter 0.2s ease;
+}
+
+.md-header__button.md-logo:hover img {
+  filter: brightness(1.1);
+}
+
+/* ─── Sidebar borders ────────────────────────────────────────── */
+.md-sidebar--primary {
+  border-right: 1px solid var(--border);
+  background: var(--bg) !important;
+}
+
+.md-sidebar--secondary {
+  border-left: 1px solid var(--border);
+  background: var(--bg) !important;
+}
+
+/* ─── Left nav ───────────────────────────────────────────────── */
+
+/* Site title in sidebar → replaced with "Menu" */
+.md-nav--primary .md-nav__title {
+  font-size: 0 !important;
+  padding: 1.4rem 1rem 1rem;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.md-nav--primary .md-nav__title::after {
+  content: "Menu";
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Nav items */
+.md-nav__item {
+  padding: 0 0.5rem;
+}
+
+.md-nav__link {
+  font-size: 0.82rem;
+  font-weight: 450;
+  color: var(--text-secondary) !important;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.md-nav__link:hover {
+  color: var(--text-primary) !important;
+  background-color: var(--surface-2) !important;
+}
+
+/* Active item */
+.md-nav__item--active > .md-nav__link,
+.md-nav__link--active {
+  color: var(--accent) !important;
+  background: linear-gradient(90deg, var(--accent-subtle) 0%, transparent 100%) !important;
+  font-weight: 500;
+  border-left: 2px solid var(--accent);
+  padding-left: calc(0.85rem - 2px);
+}
+
+/* Expand arrow */
+.md-nav__icon {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.md-nav__link:hover .md-nav__icon {
+  color: var(--text-secondary);
+}
+
+/* Nested items (sub-pages) */
+.md-nav__item .md-nav .md-nav__link {
+  font-size: 0.78rem;
+  padding: 0.42rem 0.85rem 0.42rem 1.4rem;
+  color: var(--text-muted) !important;
+  border-radius: 6px;
+}
+
+.md-nav__item .md-nav .md-nav__link:hover {
+  color: var(--text-secondary) !important;
+  background-color: var(--surface) !important;
+}
+
+.md-nav__item .md-nav .md-nav__link--active {
+  color: var(--accent) !important;
+  background: var(--accent-subtle) !important;
+  border-left: 2px solid var(--accent-dim);
+  padding-left: calc(1.4rem - 2px);
+}
+
+/* ─── TOC (right sidebar) ────────────────────────────────────── */
+.md-nav--secondary .md-nav__link {
+  font-size: 0.76rem;
+  color: var(--text-secondary) !important;
+  background: transparent !important;
+  padding: 0.22rem 0.75rem;
+  border-radius: 0;
+  margin: 0;
+  transition: color 0.15s ease, padding-left 0.15s ease;
+}
+
+.md-nav--secondary .md-nav__link:hover {
+  color: var(--accent) !important;
+  background: transparent !important;
+  padding-left: 1rem;
+}
+
+.md-nav--secondary .md-nav__link--active {
+  color: var(--accent) !important;
+  background: transparent !important;
+  border-left: 2px solid var(--accent-dim);
+}
+
+/* ─── Search ─────────────────────────────────────────────────── */
+.md-search__form {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.md-search__form:focus-within {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.md-search__input {
+  background-color: transparent !important;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.md-search__input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Typography ─────────────────────────────────────────────── */
+.md-typeset {
+  font-size: 0.68rem;
+  line-height: 1.75;
+  color: var(--text-primary);
+}
+
+.md-typeset h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 1.2rem;
+}
+
+.md-typeset h2 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 1.8rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.md-typeset h3 {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 1.2rem;
+}
+
+.md-typeset h4, .md-typeset h5 {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.md-typeset p {
+  color: #b8b8d0;
+}
+
+.md-typeset strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.md-typeset a {
+  color: var(--accent) !important;
+  text-decoration: none;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.md-typeset a:hover {
+  color: #c4b0fc !important;
+  opacity: 0.9;
+}
+
+.md-typeset hr {
+  border-color: var(--border-light);
+  margin: 2.5rem 0;
+}
+
+/* ─── Inline code ────────────────────────────────────────────── */
+.md-typeset code {
+  background-color: var(--surface-2);
+  color: #c4b0fc;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 0.1em 0.38em;
+  font-size: 0.83em;
+}
+
+/* ─── Code blocks ────────────────────────────────────────────── */
+.highlight {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border-light);
+  border-left: 2px solid var(--accent-dim);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.2rem 0;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.highlight pre {
+  background-color: transparent !important;
+  padding: 1.1rem 1.3rem;
+  margin: 0;
+  line-height: 1.7;
+}
+
+.md-clipboard {
+  color: var(--text-muted) !important;
+  transition: color 0.2s ease;
+}
+
+.md-clipboard:hover {
+  color: var(--accent) !important;
+}
+
+/* ─── Tables ─────────────────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin: 1.4rem 0;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0.8rem 1rem;
+}
+
+.md-typeset table:not([class]) td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 1rem;
+  color: #b8b8d0;
+}
+
+.md-typeset table:not([class]) tr:last-child td {
+  border-bottom: none;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background-color: var(--surface);
+  color: var(--text-primary);
+}
+
+/* ─── Blockquotes ────────────────────────────────────────────── */
+.md-typeset blockquote {
+  border-left: 2px solid var(--accent-dim);
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  padding: 0.8rem 1.2rem;
+  border-radius: 0 8px 8px 0;
+  margin: 1.2rem 0;
+  font-style: italic;
+}
+
+/* ─── Admonitions ────────────────────────────────────────────── */
+.md-typeset .admonition {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--accent-dim);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+.md-footer {
+  background: var(--bg) !important;
+  border-top: 1px solid var(--border);
+}
+
+.md-footer-meta {
+  background-color: var(--bg) !important;
+}
+
+.md-footer__link {
+  color: var(--text-muted) !important;
+  transition: color 0.2s ease;
+}
+
+.md-footer__link:hover {
+  color: var(--accent) !important;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
